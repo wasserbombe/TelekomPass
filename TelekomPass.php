@@ -38,6 +38,41 @@
 			}
 
 			/**
+			 * Get last bookings
+			 * https://pass.telekom.de/history
+			 */
+			public function getBookings(){
+				$bookings = array();
+				$doc = $this->getHTML($this->endpoint . 'history');
+
+				foreach ($doc->getElementsByTagName("table") as $table){
+					if (!$this->hasClass($table, "historyTable")) continue; 
+					foreach ($table->getElementsByTagName("tr") as $tr){
+						$this_booking = array(
+							"timestamp" => null,
+							"description" => null,
+							"price" => null
+						);
+						foreach ($tr->getElementsByTagName("td") as $td){
+							if ($this->hasClass($td, "dateCol")){
+								// todo: date parsing
+								$this_booking["timestamp"] = $td->textContent;
+							} elseif ($this->hasClass($td, "actionCol")){
+								$this_booking["description"] = $td->textContent;
+							} elseif ($this->hasClass($td, "priceCol")){
+								// todo: price/currency parsing
+								$this_booking["price"] = $td->textContent;
+							} else {
+								// unknown
+							}
+						}
+						$bookings[] = $this_booking;
+					}
+				}
+				return $bookings;
+			}
+
+			/**
 			 * Get current pass status from home page
 			 */
 			public function getStatus(){
